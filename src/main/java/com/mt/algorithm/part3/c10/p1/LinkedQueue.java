@@ -64,18 +64,4 @@ public class LinkedQueue<T> {
         }
     }
 
-
-    public static void main(String[] args) {
-        LinkedQueue<Integer> lq = new LinkedQueue<Integer>();
-        lq.add(1);
-        lq.add(2);
-        lq.add(3);
-        lq.add(4);
-        lq.out();
-        lq.out();
-        lq.out();
-        lq.out();
-        System.out.println("xxxxx");
-    }
-
 }
