@@ -215,7 +215,7 @@ public class SimpleLink<T> {
     }
 
     /**
-     * 反转链表,返回反转后的链表头节点
+     * 反转链表
      * @return 头结点
      */
     public void reverse() {
