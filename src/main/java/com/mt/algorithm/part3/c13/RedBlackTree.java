@@ -181,7 +181,7 @@ public class RedBlackTree<K,V> {
         root.color = BLACK;
     }
 
-    public void delete(K key) {
+    public void remove(K key) {
         Entry<K,V> deleted = searchEntry(root, key);
         rbDelete(deleted);
     }
@@ -195,24 +195,100 @@ public class RedBlackTree<K,V> {
         }
         Entry<K,V> child = p.left != null ? p.left : p.right;
         if (child != null) {
-
+            child.parent = p.parent;
+            if (p.parent == null) {
+                root = child;
+            } else if (p == p.parent.left) {
+                p.parent.left = child;
+            } else {
+                p.parent.right = child;
+            }
+            p.left = p.right = p.parent = null;
+            if (p.color == BLACK) {
+                fixUpAfterDelete(child);
+            }
         } else if (p.parent == null) {
             root = null;
         } else {
             if (colorOf(p) == BLACK) {
-                fixUpAfterDelete();
+                fixUpAfterDelete(p);
             }
-            if (p == p.parent.left) {
-                p.parent.left = null;
-            } else if (p == p.parent.right){
-                p.parent.right = null;
+            if (p.parent != null) {
+                if (p == p.parent.left) {
+                    p.parent.left = null;
+                } else if (p == p.parent.right){
+                    p.parent.right = null;
+                }
+                p.parent = null;
             }
-            p.parent = null;
         }
     }
 
-    private void fixUpAfterDelete() {
-
+    private void fixUpAfterDelete(Entry<K,V> x) {
+        while (x != root && colorOf(x) == BLACK) {
+            // x是父节点的左孩子
+            if (x == leftOf(parentOf(x))) {
+                // sib 是x的兄弟节点
+                Entry<K,V> sib = rightOf(parentOf(x));
+                if (colorOf(sib) == RED) {
+                    // 这一步是为了将x的兄弟节点变为黑色
+                    // 兄弟节点是红色
+                    // 此时的状态为 当前节点为黑色+黑色,兄弟节点为红色,父节点为黑色,
+                    // 兄弟节点的两个子节点都为黑色
+                    setColor(sib, BLACK);
+                    setColor(parentOf(x), RED);
+                    rotateLeft(parentOf(x));
+                    sib = rightOf(parentOf(x));
+                }
+                if (colorOf(leftOf(sib)) == BLACK && colorOf(rightOf(sib)) == BLACK) {
+                    // 当前状态为 当前节点为黑色+黑色,兄弟节点为黑色,兄弟节点的两个子节点都为黑色
+                    setColor(sib, RED);
+                    x = parentOf(x);
+                } else {
+                    if (colorOf(rightOf(sib)) == BLACK) {
+                        // 这一步是为了让兄弟节点的右孩子变为红色
+                        // 当前状态为 当前节点为 黑色+黑色,兄弟节点为黑色,
+                        // 兄弟节点的左孩子为红色,兄弟节点的右孩子为黑色
+                        setColor(sib, RED);
+                        setColor(leftOf(sib), BLACK);
+                        rotateRight(sib);
+                        sib = rightOf(parentOf(x));
+                    }
+                    // 当前状态 当前节点为黑色+黑色,兄弟节点为黑色,
+                    // 兄弟节点的左孩子任意,兄弟节点的右孩子为红色
+                    setColor(sib, colorOf(parentOf(x)));
+                    setColor(parentOf(x), BLACK);
+                    setColor(rightOf(sib), BLACK);
+                    rotateLeft(parentOf(x));
+                    x = root;
+                }
+            } else {
+                Entry<K,V> sib = leftOf(parentOf(x));
+                if (colorOf(sib) == RED) {
+                    setColor(sib, BLACK);
+                    setColor(parentOf(x), RED);
+                    rotateRight(parentOf(x));
+                    sib = leftOf(parentOf(x));
+                }
+                if (colorOf(leftOf(sib)) == BLACK && colorOf(rightOf(sib)) == BLACK) {
+                    setColor(sib, RED);
+                    x = parentOf(x);
+                } else {
+                    if (colorOf(leftOf(x)) == BLACK) {
+                        setColor(sib, RED);
+                        setColor(rightOf(sib), BLACK);
+                        rotateLeft(sib);
+                        sib = leftOf(parentOf(x));
+                    }
+                    setColor(sib, colorOf(parentOf(x)));
+                    setColor(parentOf(x), BLACK);
+                    setColor(leftOf(sib), BLACK);
+                    rotateRight(parentOf(x));
+                    x = root;
+                }
+            }
+        }
+        setColor(x, BLACK);
     }
 
     public V search(K key) {
@@ -417,5 +493,8 @@ public class RedBlackTree<K,V> {
         System.out.println("max value  " + rbt.maxKeyValue());
         System.out.println("12 successor " + rbt.successor(12));
         System.out.println("12 predecessor  " + rbt.predecessor(12));
+        System.out.println("start remove");
+        rbt.remove(7);
+        System.out.println("after remove");
     }
 }
